@@ -691,6 +691,26 @@
           }
         }
       },
+      "UserComment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          }
+        }
+      },
       "CreateDialog": {
         "type": "object",
         "properties": {
@@ -699,6 +719,43 @@
           },
           "userId": {
             "type": "string"
+          }
+        }
+      },
+      "DialogListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserComment"
+          },
+          "lastMessage": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "unreadableMessages": {
+            "type": "number"
+          }
+        }
+      },
+      "DialogInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserComment"
+            }
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
           }
         }
       },
