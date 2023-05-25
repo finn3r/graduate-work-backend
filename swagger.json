@@ -19,10 +19,10 @@
       "name": "Авторизация"
     },
     {
-      "name": "Теги"
+      "name": "Пользователи"
     },
     {
-      "name": "Пользователи"
+      "name": "Диалоги"
     },
     {
       "name": "Посты"
@@ -143,93 +143,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/admin/tags/create": {
-      "post": {
-        "tags": [
-          "Административная панель"
-        ],
-        "summary": "",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TagCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Tag"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/tags": {
-      "get": {
-        "tags": [
-          "Теги"
-        ],
-        "summary": "",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Tag"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/tags/{id}": {
-      "put": {
-        "tags": [
-          "Административная панель"
-        ],
-        "summary": "",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TagCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Административная панель"
-        ],
-        "summary": "",
-        "responses": {
-          "200": {
-            "description": "OK"
           }
         }
       }
@@ -637,6 +550,84 @@
           }
         }
       }
+    },
+    "/dialogs": {
+      "get": {
+        "tags": [
+          "Диалоги"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DialogListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dialogs/{id}": {
+      "get": {
+        "tags": [
+          "Диалоги"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DialogInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dialogs/create": {
+      "post": {
+        "tags": [
+          "Диалоги"
+        ],
+        "summary": "",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDialog"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DialogInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -697,6 +688,43 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "CreateDialog": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "dialogId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserComment"
           }
         }
       },
@@ -830,17 +858,6 @@
           }
         }
       },
-      "Tag": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          }
-        }
-      },
       "Post": {
         "type": "object",
         "properties": {
@@ -867,12 +884,6 @@
           },
           "videoUrl": {
             "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Tag"
-            }
           },
           "user": {
             "$ref": "#/components/schemas/User"
@@ -901,12 +912,6 @@
           },
           "videoUrl": {
             "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
@@ -923,20 +928,6 @@
             "type": "string"
           },
           "video": {
-            "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "TagCreate": {
-        "type": "object",
-        "properties": {
-          "value": {
             "type": "string"
           }
         }

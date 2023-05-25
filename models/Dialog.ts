@@ -1,8 +1,8 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 const Dialog = new Schema({
-  message: [{ type: Schema.Types.ObjectId, ref: 'messages' }],
-  users: [{ type: Schema.Types.ObjectId, ref: 'users' }],
+  messages: [{ type: Schema.Types.ObjectId, ref: "messages" }],
+  users: [{ type: Schema.Types.ObjectId, ref: "users" }],
 });
 
-export default model('dialogs', Dialog);
+export default model("dialogs", Dialog);

@@ -3,12 +3,10 @@ import RoleModel from "../models/Role";
 import RoleDTO from "../dtos/RoleDTO";
 import { validationResult } from "express-validator";
 import UserModel, { UserStatus } from "../models/User";
-import TagModel from "../models/Tag";
 import PostModel, { PostStatus } from "../models/Post";
 import bcrypt from "bcryptjs";
 import UserDTO from "../dtos/UserDTO";
 import TokenService from "../services/TokenService";
-import TagDTO from "../dtos/TagDTO";
 import PostDTO from "../dtos/PostDTO";
 
 class AdminController {
@@ -31,33 +29,6 @@ class AdminController {
     } catch (e) {
       console.log(e);
       return res.status(403).json({ message: "Нету доступа" });
-    }
-  }
-
-  async createTag(req: Request, res: Response) {
-    try {
-      const errors = validationResult(req);
-
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ message: "Ошибка при создании", errors });
-      }
-
-      const { value } = req.body;
-      const candidate = await TagModel.findOne({ value });
-
-      if (candidate) {
-        return res
-          .status(400)
-          .json({ message: "Тег с таким именем уже существует" });
-      }
-
-      const tag = new TagModel({ value });
-      await tag.save();
-
-      return res.status(200).json(new TagDTO(tag));
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Create error" });
     }
   }
 
@@ -174,57 +145,6 @@ class AdminController {
     }
   }
 
-  async updateTag(req: Request, res: Response) {
-    try {
-      const errors = validationResult(req);
-
-      if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при обновлении", errors });
-      }
-      const { value } = req.body;
-      const { id } = req.params;
-      const candidate = await TagModel.findOne({ _id: id });
-
-      if (!candidate) {
-        return res.status(400).json({ message: "Тег с таким id не найден" });
-      }
-
-      const post = await PostModel.findOne({ tags: { $in: id } });
-
-      if (!post) {
-        candidate.value = value;
-        await candidate.save();
-
-        return res.status(200).json(candidate);
-      } else {
-        res.status(400).json({ message: "Тег используется в постах" });
-      }
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Create error" });
-    }
-  }
-
-  async deleteTag(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-
-      const post = await PostModel.findOne({ tags: { $in: id } });
-
-      if (!post) {
-        await TagModel.findOneAndDelete({ _id: id });
-        return res.status(200).json({ success: true });
-      } else {
-        res.status(400).json({ message: "Тег используется в постах" });
-      }
-    } catch (e) {
-      console.log(e);
-      res.status(400).json({ message: "Delete error" });
-    }
-  }
-
   async updateRole(req: Request, res: Response) {
     try {
       const errors = validationResult(req);
@@ -304,7 +224,6 @@ class AdminController {
               path: "roles",
             },
           },
-          { path: "tags" },
         ])
         .exec();
 

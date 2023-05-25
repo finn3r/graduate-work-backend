@@ -1,6 +1,21 @@
-import RoleDTO from './RoleDTO';
-import DefaultDTO from './DefaultDTO';
-import { UserStatus } from '../models/User';
+import RoleDTO from "./RoleDTO";
+import DefaultDTO from "./DefaultDTO";
+import { UserStatus } from "../models/User";
+
+export class UserCommentDto extends DefaultDTO {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+
+  constructor(model: any) {
+    super(model);
+    this.email = model.email;
+    this.firstName = model.firstName;
+    this.lastName = model.lastName;
+    this.avatar = model.avatar;
+  }
+}
 
 class UserDTO extends DefaultDTO {
   email: string;
@@ -15,7 +30,7 @@ class UserDTO extends DefaultDTO {
   status?: string;
 
   constructor(model: any) {
-    super(model)
+    super(model);
     this.email = model.email;
     this.isConfirmedEmail = model.isConfirmedEmail;
     this.phone = model.phone;
