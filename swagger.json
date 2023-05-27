@@ -927,19 +927,13 @@
           "createdAt": {
             "type": "string"
           },
-          "title": {
+          "text": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "shortDescription": {
+          "attached": {
             "type": "string"
           },
           "status": {
-            "type": "string"
-          },
-          "videoUrl": {
             "type": "string"
           },
           "user": {
@@ -958,16 +952,10 @@
       "PostCreate": {
         "type": "object",
         "properties": {
-          "title": {
+          "text": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "shortDescription": {
-            "type": "string"
-          },
-          "videoUrl": {
+          "attached": {
             "type": "string"
           }
         }

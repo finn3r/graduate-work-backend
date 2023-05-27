@@ -16,7 +16,7 @@ class PostsController {
       if (user_id) {
         posts = await PostModel.find({
           user: user_id,
-          status: user.id === user_id ? undefined : PostStatus.ACTIVE,
+          ...(user.id === user_id ? {} : { status: PostStatus.ACTIVE }),
         })
           .populate([
             {
@@ -69,16 +69,18 @@ class PostsController {
 
     try {
       const { text } = req.body;
-
+      let newFilePath: string;
+      let attached: string | undefined;
       const user = (req as any).user;
 
-      const fileName = user.id;
-      const fileExtension = file.originalname.split(".").pop();
-      const newFileName = `${v4()}.${fileName}.${fileExtension}`;
-      const newFilePath = `attachedData/${newFileName}`;
-      const attached = `http://${req.headers.host}/attachedData/${newFileName}`;
-
-      fs.renameSync(file.path, newFilePath);
+      if (file) {
+        const fileName = user.id;
+        const fileExtension = file.originalname.split(".").pop();
+        const newFileName = `${v4()}.${fileName}.${fileExtension}`;
+        newFilePath = `attachedData/${newFileName}`;
+        attached = `http://${req.headers.host}/attachedData/${newFileName}`;
+        fs.renameSync(file.path, newFilePath);
+      }
 
       const post = new PostModel({
         text,
