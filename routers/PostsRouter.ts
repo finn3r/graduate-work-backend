@@ -18,5 +18,7 @@ router.post(
   PostsController.createPost
 );
 router.get("/", authMiddleware, PostsController.getPosts);
+router.put("/:id", authMiddleware, PostsController.editPost);
+router.delete("/:id", authMiddleware, PostsController.deletePost);
 
 export default router;

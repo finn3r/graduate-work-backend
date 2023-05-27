@@ -26,6 +26,7 @@ class PostsController {
               },
             },
           ])
+          .sort({ createdAt: "desc" })
           .exec();
       } else {
         const users = await UserModel.find(
@@ -47,6 +48,7 @@ class PostsController {
               },
             },
           ])
+          .sort({ createdAt: "desc" })
           .exec();
       }
       const postsDTOS = posts.map((it) => new PostDTO(it));
@@ -94,6 +96,69 @@ class PostsController {
       console.error(err);
       fs.unlinkSync(file.path);
       ApiError.internal(res, "Failed to publish the post");
+    }
+  }
+
+  async deletePost(req: Request, res: Response) {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+      const post = await PostModel.findOne({ _id: id, user: user.id });
+
+      if (!post) {
+        return ApiError.badRequest(res, "Пост не найден");
+      }
+
+      await post.remove();
+
+      return res.json({ message: "Пост успешно удален" });
+    } catch (e) {
+      console.log(e);
+      return ApiError.internal(res, "Server error");
+    }
+  }
+
+  async editPost(req: Request, res: Response) {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: "Ошибка при создании", errors });
+    }
+
+    try {
+      const { text } = req.body;
+
+      const { id } = req.params;
+
+      const user = (req as any).user;
+
+      const post = await PostModel.findOne({
+        _id: id,
+        user: user.id,
+        status: PostStatus.ACTIVE,
+      })
+        .populate([
+          {
+            path: "user",
+            populate: {
+              path: "roles",
+            },
+          },
+        ])
+        .exec();
+
+      if (!post) {
+        return ApiError.badRequest(res, "Пост не найден");
+      }
+
+      post.text = text || post.text;
+
+      await post.save();
+
+      return res.json(new PostDTO(post));
+    } catch (err) {
+      console.error(err);
+      ApiError.internal(res, "Server error");
     }
   }
 }

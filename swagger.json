@@ -474,6 +474,46 @@
         }
       }
     },
+    "/posts/{id}": {
+      "put": {
+        "tags": [
+          "Посты"
+        ],
+        "summary": "",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Посты"
+        ],
+        "summary": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/posts": {
       "get": {
         "tags": [
@@ -938,6 +978,14 @@
           },
           "user": {
             "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "PostEdit": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
           }
         }
       },
