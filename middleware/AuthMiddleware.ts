@@ -2,6 +2,7 @@ import e, { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
 import UserModel, { UserStatus } from "../models/User";
+import ApiError from "../errors/ApiError";
 
 const authMiddleware = async (
   req: Request,
@@ -16,7 +17,7 @@ const authMiddleware = async (
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ message: "Пользователь не авторизован" });
+      return ApiError.unauthorized(res, "Пользователь не авторизован");
     }
 
     const decodedData: any = jwt.verify(token, config.secret);
@@ -24,11 +25,11 @@ const authMiddleware = async (
     const user = await UserModel.findOne({ _id: decodedData.id }).exec();
 
     if (!user) {
-      return res.status(401).json({ message: "Пользователь не авторизован" });
+      return ApiError.unauthorized(res, "Пользователь не авторизован");
     }
 
     if (user.status === UserStatus.BANNED) {
-      return res.status(401).json({ message: "Пользователь заблокирован" });
+      return ApiError.unauthorized(res, "Пользователь заблокирован");
     }
 
     (req as any).user = decodedData;
@@ -36,7 +37,7 @@ const authMiddleware = async (
     next();
   } catch (e) {
     console.log(e);
-    return res.status(401).json({ message: "Пользователь не авторизован" });
+    return ApiError.unauthorized(res, "Пользователь не авторизован");
   }
 };
 

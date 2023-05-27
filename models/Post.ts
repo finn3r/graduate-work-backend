@@ -2,24 +2,16 @@ import { model, Schema } from "mongoose";
 
 export enum PostStatus {
   ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
   BANNED = "BANNED",
 }
 
 const Post = new Schema(
   {
-    title: {
+    text: {
       type: String,
-      required: true,
     },
-    description: {
-      type: String,
-      required: true,
-    },
-    shortDescription: {
-      type: String,
-      required: true,
-    },
-    videoUrl: {
+    attached: {
       type: String,
     },
     status: {

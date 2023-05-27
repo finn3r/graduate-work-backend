@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import UserDTO from "../dtos/UserDTO";
 import TokenService from "../services/TokenService";
 import PostDTO from "../dtos/PostDTO";
+import ApiError from "../errors/ApiError";
 
 class AdminController {
   async getRoles(req: Request, res: Response) {
@@ -28,7 +29,7 @@ class AdminController {
       return res.json(roleDTOS);
     } catch (e) {
       console.log(e);
-      return res.status(403).json({ message: "Нету доступа" });
+      return ApiError.forbidden(res, "Нету доступа");
     }
   }
 
@@ -37,16 +38,14 @@ class AdminController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res.status(400).json({ message: "Ошибка при создании", errors });
+        return ApiError.badRequest(res, "Ошибка при создании", errors);
       }
 
       const { value } = req.body;
       const candidate = await RoleModel.findOne({ value });
 
       if (candidate) {
-        return res
-          .status(400)
-          .json({ message: "Роль с таким именем уже существует" });
+        return ApiError.badRequest(res, "Роль с таким именем уже существует");
       }
 
       const role = new RoleModel({ value });
@@ -55,7 +54,7 @@ class AdminController {
       return res.status(200).json(new RoleDTO(role));
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Create error" });
+      ApiError.internal(res, "Create role error");
     }
   }
 
@@ -64,9 +63,7 @@ class AdminController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при авторизации", errors });
+        return ApiError.badRequest(res, "Ошибка при авторизации", errors);
       }
 
       const { email, password } = req.body;
@@ -76,21 +73,21 @@ class AdminController {
         .exec();
 
       if (!candidate) {
-        return res.status(400).json({ message: "Введенны неверные параметры" });
+        return ApiError.badRequest(res, "Введенны неверные параметры");
       }
 
       if (candidate.status === UserStatus.BANNED) {
-        return res.status(401).json({ message: "Пользователь заблокирован" });
+        return ApiError.unauthorized(res, "Пользователь заблокирован");
       }
 
       const validPassword = bcrypt.compareSync(password, candidate.password);
 
       if (!validPassword) {
-        return res.status(400).json({ message: "Введенны неверные параметры" });
+        return ApiError.badRequest(res, "Введенны неверные параметры");
       }
 
       if (!candidate.roles.map((it) => it.value).includes("ADMIN")) {
-        return res.status(400).json({ message: "Введенны неверные параметры" });
+        return ApiError.badRequest(res, "Введенны неверные параметры");
       }
 
       const userDTO = new UserDTO(candidate);
@@ -103,7 +100,7 @@ class AdminController {
       });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Login error" });
+      ApiError.internal(res, "Login error");
     }
   }
 
@@ -112,7 +109,7 @@ class AdminController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res.status(400).json({ message: "Ошибка при создании", errors });
+        return ApiError.badRequest(res, "Ошибка при создании", errors);
       }
 
       const { email, password, firstName, lastName, phone, roles } = req.body;
@@ -121,9 +118,10 @@ class AdminController {
       const userRole = await RoleModel.findOne({ value: "USER" });
 
       if (candidate) {
-        return res
-          .status(400)
-          .json({ message: "Пользователь с таким именем уже существует" });
+        return ApiError.badRequest(
+          res,
+          "Пользователь с таким именем уже существует"
+        );
       }
 
       const hashPassword = bcrypt.hashSync(password, 7);
@@ -141,7 +139,7 @@ class AdminController {
       return res.json(new UserDTO(user));
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Create error" });
+      ApiError.internal(res, "Create error");
     }
   }
 
@@ -150,9 +148,7 @@ class AdminController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при обновлении", errors });
+        ApiError.badRequest(res, "Ошибка при обновлении", errors);
       }
 
       const { value } = req.body;
@@ -160,7 +156,7 @@ class AdminController {
       const candidate = await RoleModel.findOne({ _id: id });
 
       if (!candidate) {
-        return res.status(400).json({ message: "Роль с таким id не найден" });
+        return ApiError.badRequest(res, "Роль с таким id не найден");
       }
 
       const user = await UserModel.findOne({ roles: { $in: id } });
@@ -171,11 +167,11 @@ class AdminController {
 
         return res.status(200).json(candidate);
       } else {
-        res.status(400).json({ message: "Роль используется у пользователей" });
+        ApiError.badRequest(res, "Роль используется у пользователей");
       }
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Update error" });
+      ApiError.internal(res, "Update error");
     }
   }
 
@@ -189,11 +185,11 @@ class AdminController {
         await RoleModel.findOneAndDelete({ _id: id });
         return res.status(200).json({ success: true });
       } else {
-        res.status(400).json({ message: "Роль используется у пользователей" });
+        ApiError.badRequest(res, "Роль используется у пользователей");
       }
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Delete error" });
+      ApiError.internal(res, "Delete error");
     }
   }
 
@@ -210,7 +206,7 @@ class AdminController {
       return res.json(userDTOS);
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Users error" });
+      ApiError.internal(res, "Users error");
     }
   }
 
@@ -231,7 +227,7 @@ class AdminController {
       return res.json(postsDTOS);
     } catch (e) {
       console.log(e);
-      return res.status(500).json({ message: "Server error" });
+      return ApiError.internal(res, "Server error");
     }
   }
 
@@ -242,7 +238,7 @@ class AdminController {
       const user = await UserModel.findOne({ _id: id });
 
       if (!user) {
-        return res.status(400).json({ message: "Пользователь не найден" });
+        return ApiError.badRequest(res, "Пользователь не найден");
       }
 
       const posts = await PostModel.find({ user: id });
@@ -262,7 +258,7 @@ class AdminController {
         .json({ message: "Пользователь успешно заблокирован" });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Ban error" });
+      ApiError.internal(res, "Ban error");
     }
   }
 
@@ -273,7 +269,7 @@ class AdminController {
       const user = await UserModel.findOne({ _id: id });
 
       if (!user) {
-        return res.status(400).json({ message: "Пользователь не найден" });
+        return ApiError.badRequest(res, "Пользователь не найден");
       }
 
       const posts = await PostModel.find({ user: id });
@@ -293,7 +289,7 @@ class AdminController {
         .json({ message: "Пользователь успешно разблокирован" });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Unban error" });
+      ApiError.internal(res, "Unban error");
     }
   }
 
@@ -304,7 +300,7 @@ class AdminController {
       const post = await PostModel.findOne({ _id: id });
 
       if (!post) {
-        return res.status(400).json({ message: "Пост не найден" });
+        return ApiError.badRequest(res, "Пост не найден");
       }
 
       post.status = PostStatus.BANNED;
@@ -313,7 +309,7 @@ class AdminController {
       return res.status(200).json({ message: "Пост успешно заблокирован" });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Ban error" });
+      ApiError.internal(res, "Ban error");
     }
   }
 
@@ -324,7 +320,7 @@ class AdminController {
       const post = await PostModel.findOne({ _id: id });
 
       if (!post) {
-        return res.status(400).json({ message: "Пост не найден" });
+        return ApiError.badRequest(res, "Пост не найден");
       }
 
       post.status = PostStatus.ACTIVE;
@@ -333,7 +329,7 @@ class AdminController {
       return res.status(200).json({ message: "Пост успешно разблокирован" });
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Unban error" });
+      ApiError.internal(res, "Unban error");
     }
   }
 }

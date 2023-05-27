@@ -7,6 +7,7 @@ import TokenService from "../services/TokenService";
 import UserDTO from "../dtos/UserDTO";
 import jwt, { Jwt } from "jsonwebtoken";
 import { config } from "../config";
+import ApiError from "../errors/ApiError";
 
 class AuthController {
   async registration(req: Request, res: Response) {
@@ -14,18 +15,17 @@ class AuthController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при регистрации", errors });
+        return ApiError.badRequest(res, "Ошибка при регистрации", errors);
       }
 
       const { email, password, firstName, lastName } = req.body;
       const candidate = await UserModel.findOne({ email: email.toLowerCase() });
 
       if (candidate) {
-        return res
-          .status(400)
-          .json({ message: "Пользователь с таким именем уже существует" });
+        return ApiError.badRequest(
+          res,
+          "Пользователь с таким именем уже существует"
+        );
       }
 
       const hashPassword = bcrypt.hashSync(password, 7);
@@ -49,7 +49,7 @@ class AuthController {
       res.json(tokens);
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Registration error" });
+      ApiError.internal(res, "Registration error");
     }
   }
 
@@ -58,9 +58,7 @@ class AuthController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при авторизации", errors });
+        return ApiError.badRequest(res, "Ошибка при авторизации", errors);
       }
 
       const { email, password } = req.body;
@@ -70,17 +68,17 @@ class AuthController {
         .exec();
 
       if (!candidate) {
-        return res.status(400).json({ message: "Введенны неверные параметры" });
+        return ApiError.badRequest(res, "Введенны неверные параметры");
       }
 
       if (candidate.status === UserStatus.BANNED) {
-        return res.status(401).json({ message: "Пользователь заблокирован" });
+        return ApiError.unauthorized(res, "Пользователь заблокирован");
       }
 
       const validPassword = bcrypt.compareSync(password, candidate.password);
 
       if (!validPassword) {
-        return res.status(400).json({ message: "Введенны неверные параметры" });
+        return ApiError.badRequest(res, "Введенны неверные параметры");
       }
 
       const userDTO = new UserDTO(candidate);
@@ -90,7 +88,7 @@ class AuthController {
       res.json(tokens);
     } catch (e) {
       console.log(e);
-      res.status(400).json({ message: "Login error" });
+      ApiError.internal(res, "Login error");
     }
   }
 
@@ -99,7 +97,7 @@ class AuthController {
       const { refreshToken } = req.body;
 
       if (!refreshToken) {
-        return res.status(401).json({ message: "Пользователь не авторизован" });
+        return ApiError.unauthorized(res, "Пользователь не авторизован");
       }
 
       const decodedData = jwt.verify(refreshToken, config.refreshSecret);
@@ -112,7 +110,7 @@ class AuthController {
       }
     } catch (e) {
       console.log(e);
-      return res.status(401).json({ message: "Пользователь не авторизован" });
+      return ApiError.unauthorized(res, "Пользователь не авторизован");
     }
   }
 }

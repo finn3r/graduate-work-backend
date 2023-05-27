@@ -3,28 +3,58 @@ import PostModel, { PostStatus } from "../models/Post";
 import PostDTO from "../dtos/PostDTO";
 import fs from "fs";
 import { v4 } from "uuid";
-import { getVideoDurationInSeconds } from "get-video-duration";
 import { validationResult } from "express-validator";
+import ApiError from "../errors/ApiError";
+import UserModel, { UserStatus } from "../models/User";
 
 class PostsController {
   async getPosts(req: Request, res: Response) {
     try {
-      const posts = await PostModel.find({ status: PostStatus.ACTIVE })
-        .populate([
-          {
-            path: "user",
-            populate: {
-              path: "roles",
+      let posts;
+      const { user_id = "" } = req.query;
+      const user = (req as any).user;
+      if (user_id) {
+        posts = await PostModel.find({
+          user: user_id,
+          status: user.id === user_id ? undefined : PostStatus.ACTIVE,
+        })
+          .populate([
+            {
+              path: "user",
+              populate: {
+                path: "roles",
+              },
             },
+          ])
+          .exec();
+      } else {
+        const users = await UserModel.find(
+          {
+            $and: [{ email: { $not: new RegExp(user.email) } }],
+            status: { $not: new RegExp(UserStatus.BANNED) },
           },
-        ])
-        .exec();
+          "_id"
+        ).exec();
+        posts = await PostModel.find({
+          user: { $in: users },
+          status: PostStatus.ACTIVE,
+        })
+          .populate([
+            {
+              path: "user",
+              populate: {
+                path: "roles",
+              },
+            },
+          ])
+          .exec();
+      }
       const postsDTOS = posts.map((it) => new PostDTO(it));
 
       return res.json(postsDTOS);
     } catch (e) {
       console.log(e);
-      return res.status(500).json({ message: "Server error" });
+      return ApiError.internal(res, "Server error");
     }
   }
 
@@ -32,47 +62,36 @@ class PostsController {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: "Ошибка при создании", errors });
+      return ApiError.badRequest(res, "Ошибка при создании", errors);
     }
 
     const file = (req as any).file;
 
     try {
-      const { title, description, shortDescription } = req.body;
+      const { text } = req.body;
 
       const user = (req as any).user;
-
-      const videoDuration = await getVideoDurationInSeconds(file.path);
 
       const fileName = user.id;
       const fileExtension = file.originalname.split(".").pop();
       const newFileName = `${v4()}.${fileName}.${fileExtension}`;
-      const newFilePath = `videos/${newFileName}`;
-      const videoUrl = `http://${req.headers.host}/videos/${newFileName}`;
-
-      if (videoDuration > 30) {
-        fs.unlinkSync(file.path);
-        return res
-          .status(400)
-          .json({ error: "Длительность видео не должна привышать 30 секунд" });
-      }
+      const newFilePath = `attachedData/${newFileName}`;
+      const attached = `http://${req.headers.host}/attachedData/${newFileName}`;
 
       fs.renameSync(file.path, newFilePath);
 
       const post = new PostModel({
-        title,
-        description,
-        shortDescription,
-        videoUrl,
+        text,
+        attached,
         user: user.id,
       });
       await post.save();
 
-      return res.json({ success: true, videoUrl });
+      return res.json({ message: "Пост успешно опубликован" });
     } catch (err) {
       console.error(err);
       fs.unlinkSync(file.path);
-      res.status(500).json({ error: "Failed to upload video" });
+      ApiError.internal(res, "Failed to publish the post");
     }
   }
 }

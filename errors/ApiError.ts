@@ -1,23 +1,45 @@
+import { Response } from "express";
+import { Result, ValidationError } from "express-validator";
+
 class ApiError extends Error {
   public message: string;
   public status: number;
+  public res: Response;
+  public errors: Result<ValidationError> | undefined;
 
-  constructor(status: number, message: string) {
+  constructor(
+    res: Response,
+    status: number,
+    message: string,
+    errors?: Result<ValidationError>
+  ) {
     super();
-    this.status = status
-    this.message = message
+    this.status = status;
+    this.message = message;
+    if (errors) this.errors = errors;
+    this.res = res
+      .status(this.status)
+      .json({ message: this.message, errors: this.errors });
   }
 
-  static badRequest(message: string) {
-    return new ApiError(404, message)
+  static badRequest(
+    res: Response,
+    message: string,
+    errors?: Result<ValidationError>
+  ) {
+    return new ApiError(res, 404, message, errors).res;
   }
 
-  static internal(message: string) {
-    return new ApiError(500, message)
+  static internal(res: Response, message: string) {
+    return new ApiError(res, 500, message).res;
   }
 
-  static forbidden(message: string) {
-    return new ApiError(403, message)
+  static forbidden(res: Response, message: string) {
+    return new ApiError(res, 403, message).res;
+  }
+
+  static unauthorized(res: Response, message: string) {
+    return new ApiError(res, 401, message).res;
   }
 }
 

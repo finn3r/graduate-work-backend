@@ -12,7 +12,7 @@ import DialogDTO, { DialogListDTO } from "../dtos/DialogDTO";
 import UserDTO from "../dtos/UserDTO";
 import WSError from "../errors/WSError";
 import { validationResult } from "express-validator";
-import dialog from "../models/Dialog";
+import ApiError from "../errors/ApiError";
 
 export interface IDialogCreate {
   text: string;
@@ -67,7 +67,7 @@ class DialogController {
         .exec();
 
       if (!dialog) {
-        return res.status(400).json({ message: "Диалог не найден" });
+        return ApiError.badRequest(res, "Диалог не найден");
       }
 
       await Promise.all(
@@ -82,7 +82,7 @@ class DialogController {
       return res.json(new DialogDTO(dialog));
     } catch (e) {
       console.log(e);
-      return res.status(500).json({ message: "Server error" });
+      return ApiError.internal(res, "Server error");
     }
   }
 
@@ -121,7 +121,7 @@ class DialogController {
       );
     } catch (e) {
       console.log(e);
-      return res.status(500).json({ message: "Server error" });
+      return ApiError.internal(res, "Server error");
     }
   }
 
@@ -130,9 +130,7 @@ class DialogController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({ message: "Ошибка при создание диалогов", errors });
+        return ApiError.badRequest(res, "Ошибка при создание диалогов", errors);
       }
 
       const { userId, text } = req.body;

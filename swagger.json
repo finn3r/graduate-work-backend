@@ -975,16 +975,10 @@
       "PostCreateTest": {
         "type": "object",
         "properties": {
-          "title": {
+          "text": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "shortDescription": {
-            "type": "string"
-          },
-          "video": {
+          "attached": {
             "type": "string"
           }
         }
