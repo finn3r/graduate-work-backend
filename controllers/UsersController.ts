@@ -15,9 +15,10 @@ class UsersController {
       const { search = "" } = req.query;
       const user = (req as any).user;
       const users = await UserModel.find({
-        $and: [
-          { email: { $not: new RegExp(user.email) } },
-          { email: new RegExp(String(search), "i") },
+        email: { $not: new RegExp(user.email) },
+        $or: [
+          { firstName: new RegExp(String(search).split(" ").join("|"), "i") },
+          { lastName: new RegExp(String(search).split(" ").join("|"), "i") },
         ],
         status: { $not: new RegExp(UserStatus.BANNED) },
       })
