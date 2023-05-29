@@ -8,6 +8,7 @@ import { v4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import ApiError from "../errors/ApiError";
+import { PostStatus } from "../models/Post";
 
 class UsersController {
   async getUsers(req: Request, res: Response) {
@@ -20,7 +21,7 @@ class UsersController {
           { firstName: new RegExp(String(search).split(" ").join("|"), "i") },
           { lastName: new RegExp(String(search).split(" ").join("|"), "i") },
         ],
-        _id: id,
+        ...(id ? { _id: id } : {}),
         status: { $not: new RegExp(UserStatus.BANNED) },
       })
         .populate("roles")
@@ -33,6 +34,7 @@ class UsersController {
       ApiError.internal(res, "Users error");
     }
   }
+
   async getMe(req: Request, res: Response) {
     try {
       const token = req.headers.authorization?.split(" ")[1];
