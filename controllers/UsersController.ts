@@ -12,7 +12,7 @@ import ApiError from "../errors/ApiError";
 class UsersController {
   async getUsers(req: Request, res: Response) {
     try {
-      const { search = "" } = req.query;
+      const { search = "", id = "" } = req.query;
       const user = (req as any).user;
       const users = await UserModel.find({
         email: { $not: new RegExp(user.email) },
@@ -20,6 +20,7 @@ class UsersController {
           { firstName: new RegExp(String(search).split(" ").join("|"), "i") },
           { lastName: new RegExp(String(search).split(" ").join("|"), "i") },
         ],
+        _id: id,
         status: { $not: new RegExp(UserStatus.BANNED) },
       })
         .populate("roles")
