@@ -33,7 +33,7 @@ router.post(
   "/modelAvatar",
   upload.single("model"),
   authMiddleware,
-  UsersController.uploadAvatar
+  UsersController.uploadModelAvatar
 );
 
 export default router;
