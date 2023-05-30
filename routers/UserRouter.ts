@@ -2,10 +2,10 @@ import { Router } from "express";
 import UsersController from "../controllers/UsersController";
 import { authMiddleware } from "../middleware/AuthMiddleware";
 import multer from "multer";
-import { body } from "express-validator";
 import { required } from "../middleware/ValdiationMiddlewares";
 
-const upload = multer({ dest: "avatars/" });
+const uploadAvatar = multer({ dest: "avatars/" });
+const uploadModelAvatar = multer({ dest: "modelAvatars/" });
 
 const router = Router();
 
@@ -25,13 +25,13 @@ router.post(
 );
 router.post(
   "/avatar",
-  upload.single("photo"),
+  uploadAvatar.single("photo"),
   authMiddleware,
   UsersController.uploadAvatar
 );
 router.post(
   "/modelAvatar",
-  upload.single("model"),
+  uploadModelAvatar.single("model"),
   authMiddleware,
   UsersController.uploadModelAvatar
 );
