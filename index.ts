@@ -40,6 +40,7 @@ app.use("/posts", PostsRouter);
 app.use("/dialogs", DialogRouter);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use("/avatars", express.static("avatars"));
+app.use("/modelAvatars", express.static("modelAvatars"));
 app.use("/videos", express.static("videos"));
 
 const start = async () => {
