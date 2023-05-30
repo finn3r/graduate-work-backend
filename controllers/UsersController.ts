@@ -8,7 +8,6 @@ import { v4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import ApiError from "../errors/ApiError";
-import { PostStatus } from "../models/Post";
 
 class UsersController {
   async getUsers(req: Request, res: Response) {
@@ -161,6 +160,37 @@ class UsersController {
     fs.renameSync(file.path, newFilePath);
 
     return res.status(200).send({ message: "Фото обновлено", url: publicUrl });
+  }
+
+  async uploadModelAvatar(req: Request, res: Response) {
+    const file = (req as any).file;
+    const user = (req as any).user;
+    if (!file) {
+      return ApiError.badRequest(res, "Нет модели для загрузки");
+    }
+    const fileName = user.id;
+    const fileExtension = file.originalname.split(".").pop();
+    const newFileName = `${v4()}.${fileName}.${fileExtension}`;
+    const newFilePath = `modelAvatars/${newFileName}`;
+    const publicUrl = `http://${req.headers.host}/modelAvatars/${newFileName}`;
+
+    const userFromDB = await UserModel.findOne({ _id: user.id });
+
+    if (userFromDB) {
+      if (userFromDB.modelAvatar) {
+        fs.unlinkSync(
+          userFromDB.modelAvatar?.replace(`http://${req.headers.host}/`, "")
+        );
+      }
+      userFromDB.modelAvatar = publicUrl;
+      await userFromDB.save();
+    }
+
+    fs.renameSync(file.path, newFilePath);
+
+    return res
+      .status(200)
+      .send({ message: "Модель обновлена", url: publicUrl });
   }
 }
 

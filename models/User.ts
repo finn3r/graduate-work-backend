@@ -35,6 +35,11 @@ const User = new Schema(
       required: false,
       default: null,
     },
+    modelAvatar: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   { timestamps: true }
 );

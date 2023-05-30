@@ -403,6 +403,43 @@
         }
       }
     },
+    "/users/modelAvatar": {
+      "post": {
+        "tags": [
+          "Пользователи"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelAvatarUpload"
+              }
+            }
+          }
+        },
+        "summary": "",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/change/password": {
       "post": {
         "tags": [
@@ -857,6 +894,9 @@
           },
           "avatar": {
             "type": "string"
+          },
+          "modelAvatar": {
+            "type": "string"
           }
         }
       },
@@ -993,6 +1033,14 @@
         "type": "object",
         "properties": {
           "photo": {
+            "type": "string"
+          }
+        }
+      },
+      "ModelAvatarUpload": {
+        "type": "object",
+        "properties": {
+          "model": {
             "type": "string"
           }
         }

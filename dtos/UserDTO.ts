@@ -27,6 +27,7 @@ class UserDTO extends DefaultDTO {
   updatedAt: string;
   createdAt: string;
   avatar?: string;
+  modelAvatar?: string;
   status?: string;
 
   constructor(model: any) {
@@ -39,6 +40,7 @@ class UserDTO extends DefaultDTO {
     this.updatedAt = model.updatedAt;
     this.createdAt = model.createdAt;
     this.avatar = model.avatar;
+    this.modelAvatar = model.modelAvatar;
     this.status = model.status || UserStatus.ACTIVE;
     this.roles = model.roles.map((it: any) => new RoleDTO(it));
   }
