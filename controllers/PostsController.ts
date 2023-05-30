@@ -68,7 +68,6 @@ class PostsController {
     }
 
     const file = (req as any).file;
-
     try {
       const { text } = req.body;
       let newFilePath: string;

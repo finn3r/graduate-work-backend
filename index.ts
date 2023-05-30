@@ -41,6 +41,7 @@ app.use("/dialogs", DialogRouter);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use("/avatars", express.static("avatars"));
 app.use("/modelAvatars", express.static("modelAvatars"));
+app.use("/attachedData", express.static("attachedData"));
 app.use("/videos", express.static("videos"));
 
 const start = async () => {
